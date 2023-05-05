@@ -1,5 +1,5 @@
 # -CSGO-CustomTagMenu
-Advanced tag menu supporting vip_core , steamids , flags , serverDns ++
+Advanced tag system supporting vip_core , steamids , flags , serverDns ++
 
 # VIP_CORE SUPPORT
 add **"VipTags" "1"** in groups.ini
