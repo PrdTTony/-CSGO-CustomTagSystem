@@ -313,7 +313,6 @@ public void TagMenuCustom(int client)
                 Format(buffer, 128, "%s", custom_Flags[i]);
                 ReplaceString(buffer, sizeof(buffer), "@", "");
                 GroupId group = FindAdmGroup(buffer);
-                PrintToChatAll("%s", group);
                 if (group != INVALID_GROUP_ID)
                 {   
                     char group_flags[32];
@@ -399,7 +398,6 @@ public void TagMenuVIP(int client)
                 Format(buffer, 128, "%s", vip_Flags[i]);
                 ReplaceString(buffer, sizeof(buffer), "@", "");
                 GroupId group = FindAdmGroup(buffer);
-                PrintToChatAll("%s", group);
                 if (group != INVALID_GROUP_ID)
                 {   
                     char group_flags[32];
@@ -483,7 +481,6 @@ public void TagMenuAdmin(int client)
                 Format(buffer, 128, "%s", admin_Flags[i]);
                 ReplaceString(buffer, sizeof(buffer), "@", "");
                 GroupId group = FindAdmGroup(buffer);
-                PrintToChatAll("%s", group);
                 if (group != INVALID_GROUP_ID)
                 {   
                     char group_flags[32];
@@ -554,7 +551,6 @@ public void TagMenuAdminVip(int client)
                 Format(buffer, 128, "%s", adminvip_Flags[i]);
                 ReplaceString(buffer, sizeof(buffer), "@", "");
                 GroupId group = FindAdmGroup(buffer);
-                PrintToChatAll("%s", group);
                 if (group != INVALID_GROUP_ID)
                 {   
                     char group_flags[32];
