@@ -3,7 +3,7 @@
 
 
 #define PLUGIN_AUTHOR    "TTony"
-#define PLUGIN_VERSION    "1.0 Chat-Processor"
+#define PLUGIN_VERSION    "1.1 Chat-Processor"
 
 #define MAXLENGTH_INPUT            128     
 #define MAXLENGTH_NAME            64        
@@ -25,7 +25,7 @@ Handle h_bEnable;
 Handle g_hClientCookies;
 
 char admin_Tags[100][256];
-char admin_Flags[100][8];
+char admin_Flags[100][128];
 char admin_Mode[100][32];
 char admin_TagColors[100][32];
 char admin_NameColors[100][32];
@@ -33,15 +33,16 @@ char admin_TextColors[100][32];
 char admin_SteamIds[100][32];
 
 char vip_Tags[100][256];
-char vip_Flags[100][8];
+char vip_Flags[100][128];
 char vip_Mode[100][32];
 char vip_TagColors[100][32];
 char vip_NameColors[100][32];
 char vip_TextColors[100][32];
 char vip_SteamIds[100][32];
+char vip_VipGroup[100][128];
 
 char custom_Tags[100][256];
-char custom_Flags[100][8];
+char custom_Flags[100][128];
 char custom_Mode[100][32];
 char custom_TagColors[100][32];
 char custom_NameColors[100][32];
@@ -49,7 +50,7 @@ char custom_TextColors[100][32];
 char custom_SteamIds[100][32];
 
 char adminvip_Tags[100][256];
-char adminvip_Flags[100][8];
+char adminvip_Flags[100][128];
 char adminvip_Mode[100][32];
 char adminvip_TagColors_first[100][32];
 char adminvip_TagColors_second[100][32];
@@ -177,7 +178,7 @@ void MainTagMenu(int iClient)
         menu.SetTitle("➢ Custom Tags System™ \n‎ \n➢ Your tag: %s \n‎", new_title);
     }
     menu.AddItem("admintag", "➢ Tag De Admin");
-    menu.AddItem("viptag", "➢ Tag De VIP", !VIP_IsClientVIP(iClient) && !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+    menu.AddItem("viptag", "➢ Tag De VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
     menu.AddItem("adminviptag", "➢ Tag De Admin + VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
     menu.AddItem("customtag", "➢ Tag Custom");
     char buffer[32];
@@ -286,12 +287,12 @@ public void TagMenuCustom(int client)
     AddMenuItem(menu, "0", sDisableItem);
     
     for (int i = 0; i < custom_iTags; i++)
-    {
+    {   
         char sInfo[300];
         Format(sInfo, sizeof(sInfo), "%s_,_%s", custom_Mode[i], custom_Tags[i]);
         
         if (custom_Flags[i][0] == '\0')
-        {
+        {   
             if (custom_SteamIds[i][0] != '\0')
             {
                 char sSteamID[32];
@@ -305,13 +306,36 @@ public void TagMenuCustom(int client)
                 AddMenuItem(menu, sInfo, custom_Tags[i]);
         }
         else
-        {
-            if (CheckCommandAccess(client, "", ReadFlagString(custom_Flags[i])))
-            {
-                AddMenuItem(menu, sInfo, custom_Tags[i]);
+        {               
+            if(StrContains(custom_Flags[i], "@", false) > -1)
+            {   
+                char buffer[128];
+                Format(buffer, 128, "%s", custom_Flags[i]);
+                ReplaceString(buffer, sizeof(buffer), "@", "");
+                GroupId group = FindAdmGroup(buffer);
+                PrintToChatAll("%s", group);
+                if (group != INVALID_GROUP_ID)
+                {   
+                    char group_flags[32];
+                    Format(group_flags, 32, "%d", group.GetFlags());
+
+                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    {
+                        AddMenuItem(menu, sInfo, custom_Tags[i]);
+                    } else {
+                        AddMenuItem(menu, sInfo, custom_Tags[i], ITEMDRAW_DISABLED);
+                    } 
+                }
+            } else {
+
+                if (CheckCommandAccess(client, "", ReadFlagString(custom_Flags[i])))
+                {
+                    AddMenuItem(menu, sInfo, custom_Tags[i]);
+                }
+                else
+                    AddMenuItem(menu, sInfo, custom_Tags[i], ITEMDRAW_DISABLED);
             }
-            else
-                AddMenuItem(menu, sInfo, custom_Tags[i], ITEMDRAW_DISABLED);
+            
         }
     }
     
@@ -343,22 +367,75 @@ public void TagMenuVIP(int client)
             {
                 char sSteamID[32];
                 GetClientAuthId(client, AuthId_Engine, sSteamID, sizeof(sSteamID));
-                if (StrEqual(vip_SteamIds[i], sSteamID))
-                    AddMenuItem(menu, sInfo, vip_Tags[i]);
-                else
+                if (StrEqual(vip_SteamIds[i], sSteamID)){
+                    if(vip_VipGroup[i][0] != '\0'){
+                        char VipGroup[32];
+                        VIP_GetClientVIPGroup(client, VipGroup, sizeof(VipGroup));
+                        AddMenuItem(menu, sInfo, vip_Tags[i], StrEqual(vip_VipGroup[i], VipGroup) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                    }else{
+                        AddMenuItem(menu, sInfo, vip_Tags[i]);
+                    }
+                }else{
                     AddMenuItem(menu, sInfo, vip_Tags[i], ITEMDRAW_DISABLED);
+                }
+                    
             }
             else
-                AddMenuItem(menu, sInfo, vip_Tags[i]);
+            {
+                if(vip_VipGroup[i][0] != '\0'){
+                    char VipGroup[32];
+                    VIP_GetClientVIPGroup(client, VipGroup, sizeof(VipGroup));
+                    AddMenuItem(menu, sInfo, vip_Tags[i], StrEqual(vip_VipGroup[i], VipGroup) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                }else{
+                    AddMenuItem(menu, sInfo, vip_Tags[i]);
+                }
+            }
         }
         else
         {
-            if (CheckCommandAccess(client, "", ReadFlagString(vip_Flags[i])))
-            {
-                AddMenuItem(menu, sInfo, vip_Tags[i]);
+            if(StrContains(vip_Flags[i][0], "@", false) > -1)
+            {   
+                char buffer[128];
+                Format(buffer, 128, "%s", vip_Flags[i]);
+                ReplaceString(buffer, sizeof(buffer), "@", "");
+                GroupId group = FindAdmGroup(buffer);
+                PrintToChatAll("%s", group);
+                if (group != INVALID_GROUP_ID)
+                {   
+                    char group_flags[32];
+                    Format(group_flags, 32, "%d", group.GetFlags());
+
+                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    {
+                        if(vip_VipGroup[i][0] != '\0'){
+                            char VipGroup[32];
+                            VIP_GetClientVIPGroup(client, VipGroup, sizeof(VipGroup));
+                            AddMenuItem(menu, sInfo, vip_Tags[i], StrEqual(vip_VipGroup[i], VipGroup) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                        }else{
+                            AddMenuItem(menu, sInfo, vip_Tags[i]);
+                        }
+                        
+                    } else {
+                        AddMenuItem(menu, sInfo, vip_Tags[i], ITEMDRAW_DISABLED);
+                    } 
+                }
+            } else {
+
+                if (CheckCommandAccess(client, "", ReadFlagString(vip_Flags[i])))
+                {   
+                    
+                    if(vip_VipGroup[i][0] != '\0'){
+                        char VipGroup[32];
+                        VIP_GetClientVIPGroup(client, VipGroup, sizeof(VipGroup));
+                        AddMenuItem(menu, sInfo, vip_Tags[i], StrEqual(vip_VipGroup[i], VipGroup) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                    }else{
+                        AddMenuItem(menu, sInfo, vip_Tags[i]);
+                    }
+                }
+                else
+                    AddMenuItem(menu, sInfo, vip_Tags[i], ITEMDRAW_DISABLED);
             }
-            else
-                AddMenuItem(menu, sInfo, vip_Tags[i], ITEMDRAW_DISABLED);
+            
         }
     }
     
@@ -400,12 +477,34 @@ public void TagMenuAdmin(int client)
         }
         else
         {
-            if (CheckCommandAccess(client, "", ReadFlagString(admin_Flags[i])))
-            {
-                AddMenuItem(menu, sInfo, admin_Tags[i]);
+            if(StrContains(admin_Flags[i][0], "@", false) > -1)
+            {   
+                char buffer[128];
+                Format(buffer, 128, "%s", admin_Flags[i]);
+                ReplaceString(buffer, sizeof(buffer), "@", "");
+                GroupId group = FindAdmGroup(buffer);
+                PrintToChatAll("%s", group);
+                if (group != INVALID_GROUP_ID)
+                {   
+                    char group_flags[32];
+                    Format(group_flags, 32, "%d", group.GetFlags());
+
+                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    {
+                        AddMenuItem(menu, sInfo, admin_Flags[i]);
+                    } else {
+                        AddMenuItem(menu, sInfo, admin_Flags[i], ITEMDRAW_DISABLED);
+                    } 
+                }
+            } else {
+
+                if (CheckCommandAccess(client, "", ReadFlagString(admin_Flags[i])))
+                {
+                    AddMenuItem(menu, sInfo, admin_Flags[i]);
+                }
+                else
+                    AddMenuItem(menu, sInfo, admin_Flags[i], ITEMDRAW_DISABLED);
             }
-            else
-                AddMenuItem(menu, sInfo, admin_Tags[i], ITEMDRAW_DISABLED);
         }
     }
     
@@ -449,12 +548,34 @@ public void TagMenuAdminVip(int client)
         }
         else
         {
-            if (CheckCommandAccess(client, "", ReadFlagString(adminvip_Flags[i])))
-            {
-                AddMenuItem(menu, sInfo, new_tags);
+            if(StrContains(adminvip_Flags[i][0], "@", false) > -1)
+            {   
+                char buffer[128];
+                Format(buffer, 128, "%s", adminvip_Flags[i]);
+                ReplaceString(buffer, sizeof(buffer), "@", "");
+                GroupId group = FindAdmGroup(buffer);
+                PrintToChatAll("%s", group);
+                if (group != INVALID_GROUP_ID)
+                {   
+                    char group_flags[32];
+                    Format(group_flags, 32, "%d", group.GetFlags());
+
+                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    {
+                        AddMenuItem(menu, sInfo, adminvip_Flags[i]);
+                    } else {
+                        AddMenuItem(menu, sInfo, adminvip_Flags[i], ITEMDRAW_DISABLED);
+                    } 
+                }
+            } else {
+
+                if (CheckCommandAccess(client, "", ReadFlagString(adminvip_Flags[i])))
+                {
+                    AddMenuItem(menu, sInfo, adminvip_Flags[i]);
+                }
+                else
+                    AddMenuItem(menu, sInfo, adminvip_Flags[i], ITEMDRAW_DISABLED);
             }
-            else
-                AddMenuItem(menu, sInfo, new_tags, ITEMDRAW_DISABLED);
         }
     }
     menu.ExitBackButton = true;
@@ -614,7 +735,7 @@ public void LoadTagsFromFile()
                 do
                 {
                     kv.GetString("tag", admin_Tags[admin_iTags], 256);
-                    kv.GetString("flag", admin_Flags[admin_iTags], 8);
+                    kv.GetString("flag", admin_Flags[admin_iTags], 128);
                     kv.GetString("steamid", admin_SteamIds[admin_iTags], 32);
                     kv.GetString("tag_color", admin_TagColors[admin_iTags], 32, "{default}");
                     kv.GetString("name_color", admin_NameColors[admin_iTags], 32, "{teamcolor}");
@@ -635,12 +756,13 @@ public void LoadTagsFromFile()
                 do
                 {
                     kv.GetString("tag", vip_Tags[vip_iTags], 256);
-                    kv.GetString("flag", vip_Flags[vip_iTags], 8);
+                    kv.GetString("flag", vip_Flags[vip_iTags], 128);
                     kv.GetString("steamid", vip_SteamIds[vip_iTags], 32);
                     kv.GetString("tag_color", vip_TagColors[vip_iTags], 32, "{default}");
                     kv.GetString("name_color", vip_NameColors[vip_iTags], 32, "{teamcolor}");
                     kv.GetString("text_color", vip_TextColors[vip_iTags], 32, "{default}");
                     kv.GetString("mode", vip_Mode[vip_iTags], 32, "both");
+                    kv.GetString("vip_group", vip_VipGroup[vip_iTags], 128);
                     vip_iTags++;
                     
                 } while (kv.GotoNextKey());
@@ -656,7 +778,7 @@ public void LoadTagsFromFile()
                 do
                 {
                     kv.GetString("tag", custom_Tags[custom_iTags], 256);
-                    kv.GetString("flag", custom_Flags[custom_iTags], 8);
+                    kv.GetString("flag", custom_Flags[custom_iTags], 128);
                     kv.GetString("steamid", custom_SteamIds[custom_iTags], 32);
                     kv.GetString("tag_color", custom_TagColors[custom_iTags], 32, "{default}");
                     kv.GetString("name_color", custom_NameColors[custom_iTags], 32, "{teamcolor}");
@@ -677,7 +799,7 @@ public void LoadTagsFromFile()
                 do
                 {
                     kv.GetString("tag", adminvip_Tags[adminvip_iTags], 256);
-                    kv.GetString("flag", adminvip_Flags[adminvip_iTags], 8);
+                    kv.GetString("flag", adminvip_Flags[adminvip_iTags], 128);
                     kv.GetString("steamid", adminvip_SteamIds[adminvip_iTags], 32);
                     kv.GetString("tag_color_first", adminvip_TagColors_first[adminvip_iTags], 32, "{default}");
                     kv.GetString("tag_color_second", adminvip_TagColors_second[adminvip_iTags], 32, "{default}");
