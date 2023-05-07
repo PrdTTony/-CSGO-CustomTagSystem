@@ -3,7 +3,7 @@
 
 
 #define PLUGIN_AUTHOR    "TTony"
-#define PLUGIN_VERSION    "1.1 Chat-Processor"
+#define PLUGIN_VERSION    "1.3 Chat-Processor"
 
 #define MAXLENGTH_INPUT            128     
 #define MAXLENGTH_NAME            64        
