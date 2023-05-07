@@ -483,26 +483,29 @@ public void TagMenuAdmin(int client)
                 Format(buffer, 128, "%s", admin_Flags[i]);
                 ReplaceString(buffer, sizeof(buffer), "@", "");
                 GroupId group = FindAdmGroup(buffer);
+
                 if (group != INVALID_GROUP_ID)
                 {   
                     char group_flags[32];
                     Format(group_flags, 32, "%d", group.GetFlags());
                     int flags = ReadFlagString(group_flags);
+                    
                     if (flags && (GetUserFlagBits(client) & flags) == flags)
-                    {
-                        AddMenuItem(menu, sInfo, admin_Flags[i]);
+                    {   
+                        AddMenuItem(menu, sInfo, admin_Tags[i]);
                     } else {
-                        AddMenuItem(menu, sInfo, admin_Flags[i], ITEMDRAW_DISABLED);
+                        AddMenuItem(menu, sInfo, admin_Tags[i], ITEMDRAW_DISABLED);
                     } 
                 }
             } else {
 
                 if (CheckCommandAccess(client, "", ReadFlagString(admin_Flags[i])))
                 {
-                    AddMenuItem(menu, sInfo, admin_Flags[i]);
+
+                    AddMenuItem(menu, sInfo, admin_Tags[i]);
                 }
                 else
-                    AddMenuItem(menu, sInfo, admin_Flags[i], ITEMDRAW_DISABLED);
+                    AddMenuItem(menu, sInfo, admin_Tags[i], ITEMDRAW_DISABLED);
             }
         }
     }
@@ -561,19 +564,19 @@ public void TagMenuAdminVip(int client)
 
                     if (flags && (GetUserFlagBits(client) & flags) == flags)
                     {
-                        AddMenuItem(menu, sInfo, adminvip_Flags[i]);
+                        AddMenuItem(menu, sInfo, new_tags);
                     } else {
-                        AddMenuItem(menu, sInfo, adminvip_Flags[i], ITEMDRAW_DISABLED);
+                        AddMenuItem(menu, sInfo, new_tags, ITEMDRAW_DISABLED);
                     } 
                 }
             } else {
 
                 if (CheckCommandAccess(client, "", ReadFlagString(adminvip_Flags[i])))
                 {
-                    AddMenuItem(menu, sInfo, adminvip_Flags[i]);
+                    AddMenuItem(menu, sInfo, new_tags);
                 }
                 else
-                    AddMenuItem(menu, sInfo, adminvip_Flags[i], ITEMDRAW_DISABLED);
+                    AddMenuItem(menu, sInfo, new_tags, ITEMDRAW_DISABLED);
             }
         }
     }
