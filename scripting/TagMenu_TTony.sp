@@ -177,9 +177,9 @@ void MainTagMenu(int iClient)
         Format(new_title, 100, "%s %s", sCookies[1], sCookies[2]);
         menu.SetTitle("➢ Custom Tags System™ \n‎ \n➢ Your tag: %s \n‎", new_title);
     }
-    menu.AddItem("admintag", "➢ Tag De Admin");
-    menu.AddItem("viptag", "➢ Tag De VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
-    menu.AddItem("adminviptag", "➢ Tag De Admin + VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+    menu.AddItem("admintag", "➢ Tag Admin");
+    menu.AddItem("viptag", "➢ Tag VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+    menu.AddItem("adminviptag", "➢ Tag Admin + VIP", !VIP_IsClientVIP(iClient) || !VIP_IsClientFeatureUse(iClient, g_sFeature) ? ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
     menu.AddItem("customtag", "➢ Tag Custom");
     char buffer[32];
     Format(buffer, sizeof(buffer), "➢ Tag DNS [%s]", dns_ServerDns[1]);
@@ -317,8 +317,9 @@ public void TagMenuCustom(int client)
                 {   
                     char group_flags[32];
                     Format(group_flags, 32, "%d", group.GetFlags());
+                    int flags = ReadFlagString(group_flags);
 
-                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    if (flags && (GetUserFlagBits(client) & flags) == flags)
                     {
                         AddMenuItem(menu, sInfo, custom_Tags[i]);
                     } else {
@@ -402,8 +403,9 @@ public void TagMenuVIP(int client)
                 {   
                     char group_flags[32];
                     Format(group_flags, 32, "%d", group.GetFlags());
-
-                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    int flags = ReadFlagString(group_flags);
+    
+                    if (flags && (GetUserFlagBits(client) & flags) == flags)
                     {
                         if(vip_VipGroup[i][0] != '\0'){
                             char VipGroup[32];
@@ -485,8 +487,8 @@ public void TagMenuAdmin(int client)
                 {   
                     char group_flags[32];
                     Format(group_flags, 32, "%d", group.GetFlags());
-
-                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    int flags = ReadFlagString(group_flags);
+                    if (flags && (GetUserFlagBits(client) & flags) == flags)
                     {
                         AddMenuItem(menu, sInfo, admin_Flags[i]);
                     } else {
@@ -555,8 +557,9 @@ public void TagMenuAdminVip(int client)
                 {   
                     char group_flags[32];
                     Format(group_flags, 32, "%d", group.GetFlags());
+                    int flags = ReadFlagString(group_flags);
 
-                    if (CheckCommandAccess(client, "", ReadFlagString(group_flags)))
+                    if (flags && (GetUserFlagBits(client) & flags) == flags)
                     {
                         AddMenuItem(menu, sInfo, adminvip_Flags[i]);
                     } else {
