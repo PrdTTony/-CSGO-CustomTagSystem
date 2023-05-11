@@ -54,8 +54,7 @@
 	}
 	"Menu_Title"
 	{	
-		"#format" "{0:s}"
-		"en"			"? Custom Tags System™ \n? \n? Your tag: {0} \n"
+		"en"			"â˜… TAG MENU â˜…"
 		"fr"			"â˜… TAG MENU â˜…"
 		"pl"			"â˜… TAG MENU â˜…"
 		"nl"			"â˜… TAG MENU â˜…"
